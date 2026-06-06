@@ -1,7 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.EnhancedTouch;
-using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 
 public class ObjectInfoDisplay : MonoBehaviour
 {
@@ -29,19 +26,8 @@ public class ObjectInfoDisplay : MonoBehaviour
     private GUIStyle funFactStyle;
     private bool stylesInitialized = false;
 
-    void OnEnable()
-    {
-        EnhancedTouchSupport.Enable();
-    }
-
-    void OnDisable()
-    {
-        EnhancedTouchSupport.Disable();
-    }
-
     void Start()
     {
-        // Cari camera
         mainCamera = Camera.main;
         if (mainCamera == null)
             mainCamera = FindObjectOfType<Camera>();
@@ -56,19 +42,21 @@ public class ObjectInfoDisplay : MonoBehaviour
         if (col == null)
         {
             MeshFilter mf = GetComponentInChildren<MeshFilter>();
-            if (mf != null)
+            if (mf != null && mf.sharedMesh != null && mf.sharedMesh.vertexCount > 0)
             {
                 MeshCollider mc = gameObject.AddComponent<MeshCollider>();
                 mc.sharedMesh = mf.sharedMesh;
-                mc.convex = true;
-                Debug.Log("[ObjectInfoDisplay] MeshCollider otomatis ditambahkan ke " + gameObject.name);
+                // JANGAN pakai convex — batas 255 triangle, bikin gagal di HP
+                // Non-convex MeshCollider tetap bisa di-raycast
+                mc.convex = false;
+                Debug.Log("[ObjectInfoDisplay] MeshCollider (" + mf.sharedMesh.vertexCount + " verts) ditambahkan ke " + gameObject.name);
             }
             else
             {
-                // Fallback: sphere collider
-                SphereCollider sc = gameObject.AddComponent<SphereCollider>();
-                sc.radius = 1f;
-                Debug.Log("[ObjectInfoDisplay] SphereCollider fallback ditambahkan ke " + gameObject.name);
+                BoxCollider bc = gameObject.AddComponent<BoxCollider>();
+                bc.size = new Vector3(2f, 2f, 2f);
+                bc.isTrigger = false;
+                Debug.Log("[ObjectInfoDisplay] BoxCollider fallback ditambahkan ke " + gameObject.name);
             }
         }
         else
@@ -77,40 +65,39 @@ public class ObjectInfoDisplay : MonoBehaviour
         }
     }
 
-    void Update()
+    bool TryGetInput(out Vector2 pos)
     {
-        bool clicked = false;
-        Vector2 inputPos = Vector2.zero;
+        pos = Vector2.zero;
 
-        // Mouse (Editor / PC)
-        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        if (Input.touchCount > 0)
         {
-            clicked = true;
-            inputPos = Mouse.current.position.ReadValue();
-            Debug.Log("[ObjectInfoDisplay] Mouse klik di: " + inputPos);
-        }
-
-        // Touch (Android / iOS)
-        if (!clicked && Touch.activeTouches.Count > 0)
-        {
-            var t = Touch.activeTouches[0];
-            if (t.phase == UnityEngine.InputSystem.TouchPhase.Began)
+            Touch t = Input.GetTouch(0);
+            if (t.phase == TouchPhase.Began)
             {
-                clicked = true;
-                inputPos = t.screenPosition;
-                Debug.Log("[ObjectInfoDisplay] Touch di: " + inputPos);
+                pos = t.position;
+                Debug.Log("[ObjectInfoDisplay] Touch di: " + pos);
+                return true;
             }
         }
 
-        if (!clicked) return;
-
-        // Escape / close
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        if (Input.GetMouseButtonDown(0))
         {
-            showPanel = false;
-            return;
+            pos = Input.mousePosition;
+            // Jangan pakai mousePosition kalau posisinya (0,0) — itu tanda simulasi touch
+            // yang salah di Android. Touch sudah ditangani di atas.
+            if (pos.x > 0 || pos.y > 0)
+            {
+                Debug.Log("[ObjectInfoDisplay] Mouse di: " + pos);
+                return true;
+            }
         }
 
+        return false;
+    }
+
+    void Update()
+    {
+        if (!TryGetInput(out Vector2 inputPos)) return;
         if (mainCamera == null) return;
 
         Ray ray = mainCamera.ScreenPointToRay(inputPos);
@@ -128,7 +115,6 @@ public class ObjectInfoDisplay : MonoBehaviour
             }
             else
             {
-                // Klik objek lain — tutup panel
                 float px = (Screen.width - panelWidth) / 2f;
                 float py = (Screen.height - panelHeight) / 2f;
                 Rect panelRect = new Rect(px, py, panelWidth, panelHeight);
@@ -139,9 +125,8 @@ public class ObjectInfoDisplay : MonoBehaviour
         }
         else
         {
-            Debug.Log("[ObjectInfoDisplay] Raycast MISS — tidak kena objek apapun");
+            Debug.Log("[ObjectInfoDisplay] Raycast MISS");
 
-            // Klik area kosong — tutup panel jika klik di luar panel
             if (showPanel)
             {
                 float px = (Screen.width - panelWidth) / 2f;
