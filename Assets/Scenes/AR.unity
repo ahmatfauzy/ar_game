@@ -362,13 +362,13 @@ MonoBehaviour:
   PreviewVisible: 1
   RuntimeOcclusion: 0
   RuntimeCollider: 0
-  mTrackableName: 27896c6b801447098935dac4615bf965
+  mTrackableName: nanas
   mInitializedInEditor: 1
   mDataSetPath: Vuforia/object_3D.xml
-  mAspectRatio: 1.777174
+  mAspectRatio: 0.9863946
   mImageTargetType: 0
   mWidth: 10
-  mHeight: 17.77174
+  mHeight: 9.863946
   mRuntimeTexture: {fileID: 0}
   mMotionHint: 1
   mTrackingOptimization: 0
@@ -383,7 +383,7 @@ Transform:
   m_GameObject: {fileID: 2045466453}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.42, y: 0, z: 0.6}
+  m_LocalPosition: {x: 0.42, y: 0, z: -0.28}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -404,7 +404,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Vuforia.Unity.Engine.dll::Vuforia.ImageTargetPreview
   mObserverBehaviour: {fileID: 2045466455}
   mHiddenRoot: {fileID: 0}
-  mTargetName: 27896c6b801447098935dac4615bf965
+  mTargetName: nanas
   mDatasetName: Vuforia/object_3D.xml
   mCastedBehaviour: {fileID: 2045466455}
   mMeshFilter: {fileID: 0}
@@ -418,7 +418,7 @@ Transform:
   m_GameObject: {fileID: 5454749317290244435}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.1, y: 3.93, z: 0.4}
+  m_LocalPosition: {x: 0.07, y: 3.93, z: -0.6}
   m_LocalScale: {x: 300, y: 300, z: 300}
   m_ConstrainProportionsScale: 0
   m_Children: []
